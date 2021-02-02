@@ -41,9 +41,11 @@ namespace MC2PCardManager
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tvLocalPath = new System.Windows.Forms.TreeView();
+            this.txtFileDetails = new System.Windows.Forms.TextBox();
             this.pnTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -153,6 +155,10 @@ namespace MC2PCardManager
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.Controls.Add(this.tvLocalPath);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.txtFileDetails);
             this.splitContainer1.Size = new System.Drawing.Size(800, 343);
             this.splitContainer1.SplitterDistance = 266;
             this.splitContainer1.TabIndex = 1;
@@ -165,6 +171,17 @@ namespace MC2PCardManager
             this.tvLocalPath.Name = "tvLocalPath";
             this.tvLocalPath.Size = new System.Drawing.Size(266, 343);
             this.tvLocalPath.TabIndex = 0;
+            this.tvLocalPath.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvLocalPath_AfterSelect);
+            // 
+            // txtFileDetails
+            // 
+            this.txtFileDetails.Dock = System.Windows.Forms.DockStyle.Left;
+            this.txtFileDetails.Location = new System.Drawing.Point(0, 0);
+            this.txtFileDetails.Multiline = true;
+            this.txtFileDetails.Name = "txtFileDetails";
+            this.txtFileDetails.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtFileDetails.Size = new System.Drawing.Size(274, 343);
+            this.txtFileDetails.TabIndex = 0;
             // 
             // FormMain
             // 
@@ -179,6 +196,8 @@ namespace MC2PCardManager
             this.pnTop.ResumeLayout(false);
             this.pnTop.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -199,6 +218,7 @@ namespace MC2PCardManager
         private System.Windows.Forms.ComboBox cbMCModel;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btSaveConfig;
+        private System.Windows.Forms.TextBox txtFileDetails;
     }
 }
 

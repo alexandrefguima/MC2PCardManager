@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ionic.Zip;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -117,10 +118,29 @@ namespace MC2PCardManager
             foreach (FileInfo file in directoryInfo.GetFiles())
             {
                 TreeNode tn = new TreeNode(file.Name);
-                tn.Checked = this._sdCardFiles.Contains(file);
+                if (file.Extension.ToUpper().Equals(".ZIP"))
+                {
+                    bool haveAll = true; 
+                    string zipContents = "";
+                    using (ZipFile zip = ZipFile.Read(file.FullName))
+                    {
+                        foreach (ZipEntry e in zip)
+                        {
+                            haveAll &= ((from FileInfo fi in this._sdCardFiles where fi.Name == e.FileName select fi.Name).FirstOrDefault() != null);
+                            zipContents += e.FileName + "\r\n";
+                            //if (!haveAll) break;
+                        }
+                        tn.Tag = zipContents;
+                        tn.Checked = haveAll;
+                    }
+                }
+                if (file.Name.ToUpper().Equals("README.MD"))
+                {
+                    tn.Tag = File.ReadAllText(file.FullName);
+                }
                 directoryNode.Nodes.Add(tn);
-
             }
+
             return directoryNode;
         }
 
@@ -181,6 +201,21 @@ namespace MC2PCardManager
             {
                 this._sdDrive = (SDDriveInfo)cbDrives.Items[cbDrives.SelectedIndex];
                 this.loadSDFiles();
+            }
+        }
+
+        private void tvLocalPath_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            txtFileDetails.Text = "";
+            if(e.Node != null)
+            {
+                if(e.Node.Tag != null)
+                {
+                    if (e.Node.Tag.GetType().Equals(typeof(string)))
+                    {
+                        txtFileDetails.Text = e.Node.Tag.ToString();
+                    }
+                }
             }
         }
 
