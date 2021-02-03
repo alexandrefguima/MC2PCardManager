@@ -183,7 +183,7 @@ namespace MC2PCardManager
             txtLocalPath.Text = this._localPath;
             this.loadLocalPath();
             this.loadRemovableDrives();
-            //GitLab();
+            this._git = new GitLab(this._localPath);
         }
 
         private void btAtualizaDrives_Click(object sender, EventArgs e)
@@ -202,6 +202,17 @@ namespace MC2PCardManager
                 this._sdDrive = (SDDriveInfo)cbDrives.Items[cbDrives.SelectedIndex];
                 this.loadSDFiles();
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            bool ok = this._git.Update(true);
+            
+        }
+
+        private void btSaveConfig_Click(object sender, EventArgs e)
+        {
+            this.saveConfig();
         }
 
         private void tvLocalPath_AfterSelect(object sender, TreeViewEventArgs e)
@@ -242,12 +253,6 @@ namespace MC2PCardManager
             }
             this._myModel = (eMCModels)cbMCModel.SelectedIndex;
             this.loadLocalPath();
-        }
-
-        private async void GitLab()
-        {
-            this._git = new GitLab("", "", _localPath);
-            await _git.Login();
         }
     }
     public class SDDriveInfo

@@ -1,8 +1,9 @@
-﻿using GitLabApiClient;
-using GitLabApiClient.Models.Projects.Responses;
+﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,34 +11,69 @@ namespace MC2PCardManager
 {
     public class GitLab
     {
-        private GitLabClient _cli;
-        private string 
+        private string
             _localPath = "",
-            _usr = "",
-            _pwd = "";
+            _currentVersion = "",
+            _readme = "",
+            _downloadedFile = "";
 
-        public GitLab(string usr, string pwd, string localPath)
+        public string CurrentVersion
         {
-            this._localPath = localPath; this._usr = usr; this._pwd = pwd;
-            _cli = new GitLabClient("https://gitlab.com/victor.trucco/Multicore_Bitstreams");            
+            get
+            {
+                if (string.IsNullOrEmpty(this._currentVersion)) this.Update();
+                return this._currentVersion;
+            }
+        }
+        public GitLab(string localPath)
+        {
+            this._localPath = localPath;
+        }
+        public bool DownloadLatest()
+        {
+            bool ret = true;
+            try
+            {
+                using (var webCli = new WebClient())
+                {
+                    webCli.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36";
+                    this._downloadedFile = this._localPath + Path.DirectorySeparatorChar + DateTime.Now.ToString("yyyyMMdd-HHmm") + "_Multicore_Bitstreams-master.zip";
+                    webCli.DownloadFile("https://gitlab.com/victor.trucco/Multicore_Bitstreams/-/archive/master/Multicore_Bitstreams-master.zip", this._downloadedFile);
+                }
+            }
+            catch (Exception ex)
+            {
+                ret = false;
+            }
+            return ret;
         }
 
-        public async Task Login()
+        public bool Update(bool downloadLatest = false)
         {
-            _ = await _cli.LoginAsync(_usr, _pwd);
-            await Load();
-        }
+            bool ret = true;
+            try
+            {
+                using (var webCli = new WebClient())
+                {
+                    webCli.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36";
 
-        public async Task<List<Project>> GetProjectsAsync()
-        {
-            return (List<Project>)await _cli.Projects.GetAsync();
-        }
-        public async Task Load()
-        {
-            var projs = _cli.Projects.GetAsync();
-            List<Project> ps = await GetProjectsAsync();
-            Project mc2p = (from p in ps where p.Name.Equals("Multicore - Bitstreams") select p).FirstOrDefault();
-            await this._cli.Files.GetAsync(mc2p, this._localPath);
+                    string page = webCli.DownloadString("https://gitlab.com/victor.trucco/Multicore_Bitstreams");
+
+                    HtmlDocument doc = new HtmlDocument();
+                    doc.LoadHtml(page);
+                    HtmlNode node = doc.GetElementbyId("tree-holder");
+                    if (node != null) _currentVersion = node.InnerText;
+                    if (downloadLatest)
+                    {
+                        ret = this.DownloadLatest();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ret = false;
+            }
+            return ret;
         }
     }
 }

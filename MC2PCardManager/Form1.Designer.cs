@@ -30,6 +30,7 @@ namespace MC2PCardManager
         private void InitializeComponent()
         {
             this.pnTop = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
             this.btSaveConfig = new System.Windows.Forms.Button();
             this.cbMCModel = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -51,6 +52,7 @@ namespace MC2PCardManager
             // 
             // pnTop
             // 
+            this.pnTop.Controls.Add(this.button1);
             this.pnTop.Controls.Add(this.btSaveConfig);
             this.pnTop.Controls.Add(this.cbMCModel);
             this.pnTop.Controls.Add(this.label3);
@@ -66,6 +68,16 @@ namespace MC2PCardManager
             this.pnTop.Size = new System.Drawing.Size(800, 107);
             this.pnTop.TabIndex = 0;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(715, 64);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 9;
+            this.button1.Text = "Verif. atualiz.";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // btSaveConfig
             // 
             this.btSaveConfig.Location = new System.Drawing.Point(697, 35);
@@ -74,6 +86,7 @@ namespace MC2PCardManager
             this.btSaveConfig.TabIndex = 8;
             this.btSaveConfig.Text = "Salvar config.";
             this.btSaveConfig.UseVisualStyleBackColor = true;
+            this.btSaveConfig.Click += new System.EventHandler(this.btSaveConfig_Click);
             // 
             // cbMCModel
             // 
@@ -219,6 +232,7 @@ namespace MC2PCardManager
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btSaveConfig;
         private System.Windows.Forms.TextBox txtFileDetails;
+        private System.Windows.Forms.Button button1;
     }
 }
 
