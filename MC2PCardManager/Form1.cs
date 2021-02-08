@@ -1,12 +1,18 @@
 ﻿using Ionic.Zip;
+using Microsoft.Win32.SafeHandles;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Management;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,6 +20,7 @@ namespace MC2PCardManager
 {
     public partial class FormMain : Form
     {
+
         public enum eMCModels
         {
             Undefined = 0,
@@ -31,8 +38,7 @@ namespace MC2PCardManager
         private List<FileInfo> _sdCardFiles = new List<FileInfo>();
         private SDDriveInfo _sdDrive;
 
-
-        private GitLab _git = null;
+        private bool _waitingDowload = false;
 
         public FormMain()
         {
@@ -45,12 +51,7 @@ namespace MC2PCardManager
 
             DirectoryInfo dirInfo = new DirectoryInfo(this._sdDrive.DriveInfo.Name);
             this._sdCardFiles.AddRange(dirInfo.GetFiles());
-            /*
-            foreach (FileInfo file in dirInfo.GetFiles())
-            {
-
-            }
-            */
+            this.loadLocalPath();
         }
 
         private void loadConfig()
@@ -101,47 +102,49 @@ namespace MC2PCardManager
                 cbDrives.Items.Add(new SDDriveInfo(di));
             }
             if (cbDrives.Items.Count > 0) cbDrives.SelectedIndex = 0;
+            if (drives.Count == 1) loadSDFiles();
             Cursor.Current = Cursors.Default;
         }
 
-        private void ListDirectory(TreeView treeView, string path)
+        private void loadDirectory(TreeView treeView, string path)
         {
-            var rootDirectoryInfo = new DirectoryInfo(path);
-            treeView.Nodes.Add(CreateDirectoryNode(rootDirectoryInfo));
-        }
-
-        private TreeNode CreateDirectoryNode(DirectoryInfo directoryInfo)
-        {
-            var directoryNode = new TreeNode(directoryInfo.Name);
-            foreach (var directory in directoryInfo.GetDirectories())
-                directoryNode.Nodes.Add(CreateDirectoryNode(directory));
-            foreach (FileInfo file in directoryInfo.GetFiles())
+            TreeNode rootNode = new TreeNode(cbMCModel.Text);
+            foreach (DirectoryInfo typeDir in new DirectoryInfo(path).GetDirectories())
             {
-                TreeNode tn = new TreeNode(file.Name);
-                if (file.Extension.ToUpper().Equals(".ZIP"))
+                TreeNode typeNode = new TreeNode(typeDir.Name);
+                foreach (DirectoryInfo hardDir in typeDir.GetDirectories())
                 {
-                    bool haveAll = true; 
-                    string zipContents = "";
-                    using (ZipFile zip = ZipFile.Read(file.FullName))
+                    foreach (FileInfo file in hardDir.GetFiles())
                     {
-                        foreach (ZipEntry e in zip)
+                        /*
+                        if (file.Name.ToUpper().Equals("README.MD"))
                         {
-                            haveAll &= ((from FileInfo fi in this._sdCardFiles where fi.Name == e.FileName select fi.Name).FirstOrDefault() != null);
-                            zipContents += e.FileName + "\r\n";
-                            //if (!haveAll) break;
+                            directoryNode.Tag = File.ReadAllText(file.FullName);
                         }
-                        tn.Tag = zipContents;
-                        tn.Checked = haveAll;
+                        */
+                        if (file.Extension.ToUpper().Equals(".ZIP"))
+                        {
+                            TreeNode itemNode = new TreeNode(file.Name.ToUpper().Replace(".ZIP",""));
+                            bool haveAll = true;
+                            string zipContents = "";
+                            using (ZipFile zip = ZipFile.Read(file.FullName))
+                            {
+                                foreach (ZipEntry e in zip)
+                                {
+                                    haveAll &= ((from FileInfo fi in this._sdCardFiles where fi.Name == e.FileName select fi.Name).FirstOrDefault() != null);
+                                    zipContents += e.FileName + "\r\n";
+                                    //if (!haveAll) break;
+                                }
+                                itemNode.Tag = file;
+                                itemNode.Checked = haveAll;
+                            }
+                            typeNode.Nodes.Add(itemNode);
+                        }
                     }
-                }
-                if (file.Name.ToUpper().Equals("README.MD"))
-                {
-                    tn.Tag = File.ReadAllText(file.FullName);
-                }
-                directoryNode.Nodes.Add(tn);
-            }
-
-            return directoryNode;
+                } //hardwareDir
+                rootNode.Nodes.Add(typeNode);
+            } // typeDir
+            treeView.Nodes.Add(rootNode);
         }
 
         private void loadLocalPath()
@@ -151,7 +154,7 @@ namespace MC2PCardManager
             if (this._myModel != eMCModels.Undefined)
             {
                 string mPath = this._localPath + Path.DirectorySeparatorChar + this._modelFolder;
-                if(Directory.Exists(mPath)) this.ListDirectory(tvLocalPath, mPath);
+                if(Directory.Exists(mPath)) this.loadDirectory(tvLocalPath, mPath);
             }
             Cursor.Current = Cursors.Default;
         }
@@ -181,9 +184,77 @@ namespace MC2PCardManager
                 }
             }
             txtLocalPath.Text = this._localPath;
-            this.loadLocalPath();
             this.loadRemovableDrives();
-            this._git = new GitLab(this._localPath);
+            this.loadLocalPath();
+        }
+
+        private string downloadLatest()
+        {
+            string ret = this._localPath + Path.DirectorySeparatorChar + DateTime.Now.ToString("yyyyMMdd-HHmm") + "_Multicore_Bitstreams-master.zip";
+            pBar.Value = 0;  pBar.Maximum = 100; pBar.Visible = true;
+            lbProgressMsg.Text = "Fazendo download do repositorio"; lbProgressMsg.Visible = true;
+            try
+            {
+                using (var webCli = new WebClient())
+                {
+                    webCli.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36";
+                    webCli.DownloadProgressChanged += delegate (object o, System.Net.DownloadProgressChangedEventArgs ee)
+                    {
+                        pBar.Value = ee.ProgressPercentage;
+                        Console.WriteLine(ee.ProgressPercentage + "%");
+                        //pBar.Refresh();
+                    };
+                    webCli.DownloadFileCompleted += delegate (object o, System.ComponentModel.AsyncCompletedEventArgs ee)
+                    {
+                        pBar.Visible = false; lbProgressMsg.Visible = false;
+                        this._waitingDowload = false;
+
+                        if ((ee.Error != null) || (ee.Cancelled))
+                        {
+                            return;
+                        }
+                    };
+                    webCli.DownloadFileAsync(new System.Uri("https://gitlab.com/victor.trucco/Multicore_Bitstreams/-/archive/master/Multicore_Bitstreams-master.zip"), ret);
+                }
+            }
+            catch (Exception ex)
+            {
+                ret = string.Empty;
+            }
+            return ret;
+        }
+
+        private void extractDownloadedZip(string zipPath)
+        {
+            pBar.Value = 0; 
+            lbProgressMsg.Text = "Extraindo conteúdo do ZIP..."; lbProgressMsg.Visible = true;
+            pnTop.Refresh();
+            using (ZipFile zip = ZipFile.Read(zipPath))
+            {
+                pBar.Maximum = zip.Count; pBar.Visible = true;
+                int pCount = 0;
+                zip.ExtractProgress += delegate (object o, ExtractProgressEventArgs ee)
+                {
+                    pBar.Value = pCount++;
+                };
+                //zip.ExtractAll(this._localPath, ExtractExistingFileAction.OverwriteSilently);
+                foreach (ZipEntry ze in zip)
+                {
+                    if (ze.FileName.Equals("Multicore_Bitstreams-master/")) continue; //ignora a criação do diretório-raiz
+                    string newPath = Path.Combine(this._localPath, ze.FileName.Replace("Multicore_Bitstreams-master/", ""));
+
+                    if (ze.IsDirectory)
+                    {
+                        if (!Directory.Exists(newPath)) Directory.CreateDirectory(newPath);
+                    }
+                    else
+                    {
+                        using (FileStream stream = new FileStream(newPath, FileMode.Create))
+                            ze.Extract(stream);
+                    }
+                }
+            }
+            pBar.Visible = false; lbProgressMsg.Visible = false;
         }
 
         private void btAtualizaDrives_Click(object sender, EventArgs e)
@@ -206,13 +277,81 @@ namespace MC2PCardManager
 
         private void button1_Click(object sender, EventArgs e)
         {
-            bool ok = this._git.Update(true);
-            
+            pBar.Value = 0;
+            pBar.Visible = true;
+            this._waitingDowload = true;
+            string downloadedFile = this.downloadLatest();
+            while (this._waitingDowload) 
+            {
+                Application.DoEvents();
+            }
+            if (!string.IsNullOrEmpty(downloadedFile))
+            {
+                extractDownloadedZip(downloadedFile);
+                loadLocalPath();
+            }
+            else
+            {
+                //erro no download
+            }
         }
 
         private void btSaveConfig_Click(object sender, EventArgs e)
         {
             this.saveConfig();
+        }
+
+        private void tvLocalPath_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Level == 2) // nodes dos itens
+            {
+                FileInfo fi = (FileInfo)e.Node.Tag;
+                using (ZipFile zip = ZipFile.Read(fi.FullName))
+                {
+                    if (e.Node.Checked) //adiciona
+                    {
+                        try
+                        {
+                            Cursor.Current = Cursors.WaitCursor;
+                            try
+                            {
+                                zip.ExtractAll(_sdDrive.DriveInfo.RootDirectory.Name);
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        }
+                        finally
+                        {
+                            Cursor.Current = Cursors.Default;
+                        }
+                    }
+                    else //remove
+                    {
+                        try
+                        {
+                            Cursor.Current = Cursors.WaitCursor;
+                            try
+                            {
+                                foreach (ZipEntry ze in zip)
+                                {
+                                    string path = _sdDrive.DriveInfo.RootDirectory.Name + ze.FileName;
+                                    File.Delete(path);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        }
+                        finally
+                        {
+                            Cursor.Current = Cursors.Default;
+                        }
+                    }
+                }
+            }
         }
 
         private void tvLocalPath_AfterSelect(object sender, TreeViewEventArgs e)

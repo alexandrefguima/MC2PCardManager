@@ -30,6 +30,7 @@ namespace MC2PCardManager
         private void InitializeComponent()
         {
             this.pnTop = new System.Windows.Forms.Panel();
+            this.pBar = new System.Windows.Forms.ProgressBar();
             this.button1 = new System.Windows.Forms.Button();
             this.btSaveConfig = new System.Windows.Forms.Button();
             this.cbMCModel = new System.Windows.Forms.ComboBox();
@@ -43,6 +44,7 @@ namespace MC2PCardManager
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tvLocalPath = new System.Windows.Forms.TreeView();
             this.txtFileDetails = new System.Windows.Forms.TextBox();
+            this.lbProgressMsg = new System.Windows.Forms.Label();
             this.pnTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -52,6 +54,8 @@ namespace MC2PCardManager
             // 
             // pnTop
             // 
+            this.pnTop.Controls.Add(this.lbProgressMsg);
+            this.pnTop.Controls.Add(this.pBar);
             this.pnTop.Controls.Add(this.button1);
             this.pnTop.Controls.Add(this.btSaveConfig);
             this.pnTop.Controls.Add(this.cbMCModel);
@@ -67,6 +71,15 @@ namespace MC2PCardManager
             this.pnTop.Name = "pnTop";
             this.pnTop.Size = new System.Drawing.Size(800, 107);
             this.pnTop.TabIndex = 0;
+            // 
+            // pBar
+            // 
+            this.pBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pBar.Location = new System.Drawing.Point(0, 93);
+            this.pBar.Name = "pBar";
+            this.pBar.Size = new System.Drawing.Size(800, 14);
+            this.pBar.TabIndex = 10;
+            this.pBar.Visible = false;
             // 
             // button1
             // 
@@ -184,6 +197,7 @@ namespace MC2PCardManager
             this.tvLocalPath.Name = "tvLocalPath";
             this.tvLocalPath.Size = new System.Drawing.Size(266, 343);
             this.tvLocalPath.TabIndex = 0;
+            this.tvLocalPath.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvLocalPath_AfterCheck);
             this.tvLocalPath.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvLocalPath_AfterSelect);
             // 
             // txtFileDetails
@@ -195,6 +209,19 @@ namespace MC2PCardManager
             this.txtFileDetails.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtFileDetails.Size = new System.Drawing.Size(274, 343);
             this.txtFileDetails.TabIndex = 0;
+            // 
+            // lbProgressMsg
+            // 
+            this.lbProgressMsg.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbProgressMsg.BackColor = System.Drawing.Color.Transparent;
+            this.lbProgressMsg.Location = new System.Drawing.Point(3, 75);
+            this.lbProgressMsg.Name = "lbProgressMsg";
+            this.lbProgressMsg.Size = new System.Drawing.Size(794, 17);
+            this.lbProgressMsg.TabIndex = 11;
+            this.lbProgressMsg.Text = "lbProgressMsg";
+            this.lbProgressMsg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lbProgressMsg.Visible = false;
             // 
             // FormMain
             // 
@@ -233,6 +260,8 @@ namespace MC2PCardManager
         private System.Windows.Forms.Button btSaveConfig;
         private System.Windows.Forms.TextBox txtFileDetails;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ProgressBar pBar;
+        private System.Windows.Forms.Label lbProgressMsg;
     }
 }
 
