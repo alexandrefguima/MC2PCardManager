@@ -30,6 +30,7 @@ namespace MC2PCardManager
         private void InitializeComponent()
         {
             this.pnTop = new System.Windows.Forms.Panel();
+            this.lbProgressMsg = new System.Windows.Forms.Label();
             this.pBar = new System.Windows.Forms.ProgressBar();
             this.button1 = new System.Windows.Forms.Button();
             this.btSaveConfig = new System.Windows.Forms.Button();
@@ -44,7 +45,6 @@ namespace MC2PCardManager
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tvLocalPath = new System.Windows.Forms.TreeView();
             this.txtFileDetails = new System.Windows.Forms.TextBox();
-            this.lbProgressMsg = new System.Windows.Forms.Label();
             this.pnTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -71,6 +71,19 @@ namespace MC2PCardManager
             this.pnTop.Name = "pnTop";
             this.pnTop.Size = new System.Drawing.Size(800, 107);
             this.pnTop.TabIndex = 0;
+            // 
+            // lbProgressMsg
+            // 
+            this.lbProgressMsg.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbProgressMsg.BackColor = System.Drawing.Color.Transparent;
+            this.lbProgressMsg.Location = new System.Drawing.Point(228, 75);
+            this.lbProgressMsg.Name = "lbProgressMsg";
+            this.lbProgressMsg.Size = new System.Drawing.Size(351, 17);
+            this.lbProgressMsg.TabIndex = 11;
+            this.lbProgressMsg.Text = "lbProgressMsg";
+            this.lbProgressMsg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lbProgressMsg.Visible = false;
             // 
             // pBar
             // 
@@ -209,19 +222,6 @@ namespace MC2PCardManager
             this.txtFileDetails.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtFileDetails.Size = new System.Drawing.Size(274, 343);
             this.txtFileDetails.TabIndex = 0;
-            // 
-            // lbProgressMsg
-            // 
-            this.lbProgressMsg.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbProgressMsg.BackColor = System.Drawing.Color.Transparent;
-            this.lbProgressMsg.Location = new System.Drawing.Point(3, 75);
-            this.lbProgressMsg.Name = "lbProgressMsg";
-            this.lbProgressMsg.Size = new System.Drawing.Size(794, 17);
-            this.lbProgressMsg.TabIndex = 11;
-            this.lbProgressMsg.Text = "lbProgressMsg";
-            this.lbProgressMsg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lbProgressMsg.Visible = false;
             // 
             // FormMain
             // 

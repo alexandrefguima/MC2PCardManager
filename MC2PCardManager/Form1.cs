@@ -111,17 +111,24 @@ namespace MC2PCardManager
             TreeNode rootNode = new TreeNode(cbMCModel.Text);
             foreach (DirectoryInfo typeDir in new DirectoryInfo(path).GetDirectories())
             {
+                Multicore2TypeDirectory mc2TDir = new Multicore2TypeDirectory() { 
+                    Name = typeDir.Name 
+                };
                 TreeNode typeNode = new TreeNode(typeDir.Name);
                 foreach (DirectoryInfo hardDir in typeDir.GetDirectories())
                 {
+                    MulticoreDirectory MCDir = new MulticoreDirectory()
+                    {
+                        DirInfo = hardDir
+                    };
                     foreach (FileInfo file in hardDir.GetFiles())
                     {
-                        /*
+                        
                         if (file.Name.ToUpper().Equals("README.MD"))
                         {
-                            directoryNode.Tag = File.ReadAllText(file.FullName);
+                            MCDir.Readme = File.ReadAllText(file.FullName);
                         }
-                        */
+                        
                         if (file.Extension.ToUpper().Equals(".ZIP"))
                         {
                             TreeNode itemNode = new TreeNode(file.Name.ToUpper().Replace(".ZIP",""));
@@ -197,12 +204,10 @@ namespace MC2PCardManager
             {
                 using (var webCli = new WebClient())
                 {
-                    webCli.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36";
+                    //webCli.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36";
                     webCli.DownloadProgressChanged += delegate (object o, System.Net.DownloadProgressChangedEventArgs ee)
                     {
-                        pBar.Value = ee.ProgressPercentage;
-                        Console.WriteLine(ee.ProgressPercentage + "%");
-                        //pBar.Refresh();
+                        lbProgressMsg.Text = "Baixando arquivo..." + ee.BytesReceived / 1024 + " Kb";
                     };
                     webCli.DownloadFileCompleted += delegate (object o, System.ComponentModel.AsyncCompletedEventArgs ee)
                     {
@@ -214,7 +219,7 @@ namespace MC2PCardManager
                             return;
                         }
                     };
-                    webCli.DownloadFileAsync(new System.Uri("https://gitlab.com/victor.trucco/Multicore_Bitstreams/-/archive/master/Multicore_Bitstreams-master.zip"), ret);
+                    webCli.DownloadFileAsync(new System.Uri("https://gitlab.com/victor.trucco/Multicore_Bitstreams/-/archive/master/Multicore_Bitstreams-master.zip"), ret);                    
                 }
             }
             catch (Exception ex)
@@ -232,10 +237,9 @@ namespace MC2PCardManager
             using (ZipFile zip = ZipFile.Read(zipPath))
             {
                 pBar.Maximum = zip.Count; pBar.Visible = true;
-                int pCount = 0;
                 zip.ExtractProgress += delegate (object o, ExtractProgressEventArgs ee)
                 {
-                    pBar.Value = pCount++;
+                    if (ee.EventType == ZipProgressEventType.Saving_AfterWriteEntry) pBar.Value++;
                 };
                 //zip.ExtractAll(this._localPath, ExtractExistingFileAction.OverwriteSilently);
                 foreach (ZipEntry ze in zip)
