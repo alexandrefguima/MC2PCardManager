@@ -20,14 +20,7 @@ namespace MC2PCardManager
 {
     public partial class FormMain : Form
     {
-
-        public enum eMCModels
-        {
-            Undefined = 0,
-            Multicore1 = 1,
-            Multicore2 = 2,
-            Multicore2p= 3
-        }
+        private bool _loading = true;
 
         private eMCModels _myModel = eMCModels.Undefined;
         private string
@@ -35,6 +28,9 @@ namespace MC2PCardManager
             _currentHead = "",
             _modelFolder = ""
         ;
+
+        private Multicore2Repo _mc2repo = new Multicore2Repo();
+
         private List<FileInfo> _sdCardFiles = new List<FileInfo>();
         private SDDriveInfo _sdDrive;
 
@@ -47,11 +43,36 @@ namespace MC2PCardManager
 
         private void loadSDFiles()
         {
-            this._sdCardFiles.Clear();
-
+            this._sdCardFiles.Clear();            
             DirectoryInfo dirInfo = new DirectoryInfo(this._sdDrive.DriveInfo.Name);
             this._sdCardFiles.AddRange(dirInfo.GetFiles());
-            this.loadLocalPath();
+            //this.loadLocalPath();
+            if (tvLocalPath.Nodes.Count > 0) updateExistingCores();
+        }
+        private void updateExistingCores()
+        {
+            this.UncheckAllNodes(tvLocalPath.Nodes);
+            List<TreeNode> nodesCores = new List<TreeNode>();
+            foreach(TreeNode tnT in tvLocalPath.Nodes[0].Nodes)
+            {
+                foreach (TreeNode tnC in tnT.Nodes) nodesCores.Add(tnC);
+            }
+            if (nodesCores.Count > 0)
+            {
+                foreach (TreeNode tnCore in nodesCores)
+                {
+                    MulticoreCoreZipFile mcZip = (MulticoreCoreZipFile)tnCore.Tag;
+                    using (ZipFile zip = ZipFile.Read(mcZip.FileInfo.FullName))
+                    {
+                        foreach (ZipEntry e in zip)
+                        {
+                            tnCore.Checked = ((from FileInfo fiSD in this._sdCardFiles where fiSD.Name == e.FileName select fiSD.Name).FirstOrDefault() != null);
+                            //zipContents += e.FileName + "\r\n";
+                            //if (!haveAll) break;
+                        }
+                    }
+                }
+            }
         }
 
         private void loadConfig()
@@ -108,11 +129,12 @@ namespace MC2PCardManager
 
         private void loadDirectory(TreeView treeView, string path)
         {
+            _mc2repo.TypeDirs.Clear(); _mc2repo.Model = _myModel;
             TreeNode rootNode = new TreeNode(cbMCModel.Text);
             foreach (DirectoryInfo typeDir in new DirectoryInfo(path).GetDirectories())
             {
                 Multicore2TypeDirectory mc2TDir = new Multicore2TypeDirectory() { 
-                    Name = typeDir.Name 
+                    Name = typeDir.Name
                 };
                 TreeNode typeNode = new TreeNode(typeDir.Name);
                 foreach (DirectoryInfo hardDir in typeDir.GetDirectories())
@@ -147,21 +169,140 @@ namespace MC2PCardManager
                             }
                             typeNode.Nodes.Add(itemNode);
                         }
+                        MCDir.Cores.Add(new MulticoreCoreZipFile() { FileInfo = file });
                     }
+                    mc2TDir.Directories.Add(MCDir);
                 } //hardwareDir
                 rootNode.Nodes.Add(typeNode);
+                _mc2repo.TypeDirs.Add(mc2TDir);
             } // typeDir
             treeView.Nodes.Add(rootNode);
         }
 
+        private void loadRepository(string path)
+        {
+            _mc2repo.TypeDirs.Clear(); _mc2repo.Model = _myModel;
+            
+            foreach (DirectoryInfo typeDir in new DirectoryInfo(path).GetDirectories())
+            {
+                Multicore2TypeDirectory mc2TDir = new Multicore2TypeDirectory()
+                {
+                    Name = typeDir.Name
+                };
+
+                foreach (DirectoryInfo hardDir in typeDir.GetDirectories())
+                {
+                    MulticoreDirectory MCDir = new MulticoreDirectory()
+                    {
+                        DirInfo = hardDir
+                    };
+                    foreach (FileInfo file in hardDir.GetFiles())
+                    {
+
+                        if ((file.Name.ToUpper().Equals("README.MD")) || (file.Name.ToUpper().Equals("README.TXT")))
+                        {
+                            MCDir.Readme = File.ReadAllText(file.FullName);
+                        }
+                        else
+                        {
+                            if (file.Extension.ToUpper().Equals(".ZIP"))
+                            {
+                                //bool haveAll = true;
+                                string zipContents = "";
+                                using (ZipFile zip = ZipFile.Read(file.FullName))
+                                {
+                                    foreach (ZipEntry e in zip)
+                                    {
+                                        //haveAll &= ((from FileInfo fi in this._sdCardFiles where fi.Name == e.FileName select fi.Name).FirstOrDefault() != null);
+                                        zipContents += e.FileName + "\r\n";
+                                        //if (!haveAll) break;
+                                    }
+                                }
+                                MCDir.Cores.Add(
+                                    new MulticoreCoreZipFile()
+                                    {
+                                        FileInfo = file,
+                                        ZipContents = zipContents,//.Split(new char[] { '\r', '\n' }),
+                                        HardDir = MCDir
+                                    }
+                                );
+                            }
+                        }
+                    }
+                    mc2TDir.Directories.Add(MCDir);
+                } //hardwareDir
+                _mc2repo.TypeDirs.Add(mc2TDir);
+            } // typeDir
+
+            #region detect cores with repeating names
+            //var dups = _mc2repo.Cores.GroupBy(n => n.FileInfo.Name).Where(c => c.Count() > 1).Select(x => x).ToList();
+            List<string> dups = _mc2repo.Cores.GroupBy(n => n.FileInfo.Name).SelectMany(g => g.Skip(1)).Distinct().Select(s=>s.FileInfo.Name).ToList();
+            if (dups.Count > 0)
+            {
+                foreach (string corename in dups)
+                {
+                    foreach(MulticoreCoreZipFile core in _mc2repo.Cores.Where(c => c.FileInfo.Name.Equals(corename)).Select(s => s).ToList())
+                    {
+                        core.SameName = true;
+                    }
+                }
+            }
+            #endregion detect cores with repeating names
+        }
+
+        private void loadTreeView()
+        {
+            tvLocalPath.Nodes.Clear();
+            TreeNode root = new TreeNode(_mc2repo.ToString());
+            foreach(Multicore2TypeDirectory typeDir in _mc2repo.TypeDirs)
+            {
+                TreeNode typeNode = new TreeNode(typeDir.ToString());
+                foreach(MulticoreDirectory mcDir in typeDir.Directories)
+                {
+                    foreach(MulticoreCoreZipFile core in mcDir.Cores)
+                    {
+                        TreeNode coreNode = new TreeNode(core.ToString().ToUpper().Replace(".ZIP","")) { Tag = core };
+                        typeNode.Nodes.Add(coreNode);
+                    }
+                }
+                root.Nodes.Add(typeNode);
+            }
+            tvLocalPath.Nodes.Add(root);
+            tvLocalPath.Sort();
+        }
+
+        public void UncheckAllNodes(TreeNodeCollection nodes)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                node.Checked = false;
+                CheckChildren(node, false);
+            }
+        }
+
+        private void CheckChildren(TreeNode rootNode, bool isChecked)
+        {
+            foreach (TreeNode node in rootNode.Nodes)
+            {
+                CheckChildren(node, isChecked);
+                node.Checked = isChecked;
+            }
+        }
+
         private void loadLocalPath()
-        {            
+        {
+            if (_loading) return; //previne repetição ao abrir o programa
+
             Cursor.Current = Cursors.WaitCursor;
             tvLocalPath.Nodes.Clear();
             if (this._myModel != eMCModels.Undefined)
             {
                 string mPath = this._localPath + Path.DirectorySeparatorChar + this._modelFolder;
-                if(Directory.Exists(mPath)) this.loadDirectory(tvLocalPath, mPath);
+                if (Directory.Exists(mPath))
+                {
+                    this.loadRepository(mPath);
+                    this.loadTreeView();
+                }
             }
             Cursor.Current = Cursors.Default;
         }
@@ -191,8 +332,10 @@ namespace MC2PCardManager
                 }
             }
             txtLocalPath.Text = this._localPath;
-            this.loadRemovableDrives();
+            
+            _loading = false;
             this.loadLocalPath();
+            this.loadRemovableDrives();
         }
 
         private string downloadLatest()
@@ -307,6 +450,7 @@ namespace MC2PCardManager
 
         private void tvLocalPath_AfterCheck(object sender, TreeViewEventArgs e)
         {
+            return;
             if (e.Node.Level == 2) // nodes dos itens
             {
                 FileInfo fi = (FileInfo)e.Node.Tag;
@@ -365,9 +509,10 @@ namespace MC2PCardManager
             {
                 if(e.Node.Tag != null)
                 {
-                    if (e.Node.Tag.GetType().Equals(typeof(string)))
+                    if (e.Node.Tag.GetType().Equals(typeof(MulticoreCoreZipFile)))
                     {
-                        txtFileDetails.Text = e.Node.Tag.ToString();
+                        MulticoreCoreZipFile core = (MulticoreCoreZipFile)e.Node.Tag;
+                        txtFileDetails.Text = core.HardDir.Readme+"\r\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\r\n"+ core.ZipContents;
                     }
                 }
             }
