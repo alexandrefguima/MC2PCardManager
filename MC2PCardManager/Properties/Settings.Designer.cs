@@ -70,5 +70,17 @@ namespace MC2PCardManager.Properties {
                 this["MyMCModel"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RomsPath {
+            get {
+                return ((string)(this["RomsPath"]));
+            }
+            set {
+                this["RomsPath"] = value;
+            }
+        }
     }
 }

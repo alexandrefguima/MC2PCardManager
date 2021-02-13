@@ -1,5 +1,6 @@
 ﻿using Ionic.Zip;
 using Microsoft.Win32.SafeHandles;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace MC2PCardManager
 {
     public partial class FormMain : Form
     {
+        public static readonly string[] TYPES_WITH_ROMS = { "Computers", "Consoles"};
+
         private bool _loading = true;
 
         private eMCModels _myModel = eMCModels.Undefined;
@@ -28,6 +31,8 @@ namespace MC2PCardManager
             _currentHead = "",
             _modelFolder = ""
         ;
+
+        private Dictionary<string, string> _romsPath = new Dictionary<string, string>();
 
         private Multicore2Repo _mc2repo = new Multicore2Repo();
 
@@ -83,6 +88,20 @@ namespace MC2PCardManager
             foreach (string model in models) cbMCModel.Items.Add(model);
             this._myModel = (eMCModels)Properties.Settings.Default.MyMCModel;
             cbMCModel.SelectedIndex = Properties.Settings.Default.MyMCModel;
+            _romsPath.Clear();
+            string _rp = Properties.Settings.Default.RomsPath;
+            if (!string.IsNullOrEmpty(_rp))
+            {
+                _romsPath = JsonConvert.DeserializeObject<Dictionary<string, string>>(_rp);                
+            }
+        }
+        private void updateCoresRomPaths()
+        {
+            foreach (KeyValuePair<string, string> kvp in _romsPath)
+            {
+                MulticoreCoreZipFile core = (from MulticoreCoreZipFile cz in _mc2repo.Cores where cz.Name.Equals(kvp.Key) select cz).FirstOrDefault();
+                if (core != null) core.RomsFolder = kvp.Value;
+            }
         }
 
         private void saveConfig()
@@ -90,6 +109,10 @@ namespace MC2PCardManager
             Properties.Settings.Default.LocalPath = this._localPath;
             Properties.Settings.Default.CurrentHead = this._currentHead;
             Properties.Settings.Default.MyMCModel = (int)this._myModel;
+            if (_romsPath.Count > 0)
+            {
+                Properties.Settings.Default.RomsPath = JsonConvert.SerializeObject(_romsPath);
+            }
             Properties.Settings.Default.Save();
         }
 
@@ -187,14 +210,16 @@ namespace MC2PCardManager
             {
                 Multicore2TypeDirectory mc2TDir = new Multicore2TypeDirectory()
                 {
-                    Name = typeDir.Name
+                    Name = typeDir.Name, 
+                    HaveRoms = TYPES_WITH_ROMS.Contains(typeDir.Name)
                 };
 
                 foreach (DirectoryInfo hardDir in typeDir.GetDirectories())
                 {
                     MulticoreDirectory MCDir = new MulticoreDirectory()
                     {
-                        DirInfo = hardDir
+                        DirInfo = hardDir, 
+                        TypeDir = mc2TDir
                     };
                     foreach (FileInfo file in hardDir.GetFiles())
                     {
@@ -218,14 +243,14 @@ namespace MC2PCardManager
                                         //if (!haveAll) break;
                                     }
                                 }
-                                MCDir.Cores.Add(
-                                    new MulticoreCoreZipFile()
-                                    {
-                                        FileInfo = file,
-                                        ZipContents = zipContents,//.Split(new char[] { '\r', '\n' }),
-                                        HardDir = MCDir
-                                    }
-                                );
+                                MulticoreCoreZipFile core = new MulticoreCoreZipFile()
+                                {
+                                    FileInfo = file,
+                                    ZipContents = zipContents,//.Split(new char[] { '\r', '\n' }),
+                                    HardDir = MCDir
+                                };
+                                if (_romsPath.ContainsKey(file.Name)) core.RomsFolder = _romsPath[file.Name];
+                                MCDir.Cores.Add(core);
                             }
                         }
                     }
@@ -248,6 +273,8 @@ namespace MC2PCardManager
                 }
             }
             #endregion detect cores with repeating names
+
+            this.updateCoresRomPaths();
         }
 
         private void loadTreeView()
@@ -504,18 +531,60 @@ namespace MC2PCardManager
 
         private void tvLocalPath_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            txtFileDetails.Text = "";
+            txtReadme.Text = "";
             if(e.Node != null)
             {
                 if(e.Node.Tag != null)
                 {
                     if (e.Node.Tag.GetType().Equals(typeof(MulticoreCoreZipFile)))
                     {
-                        MulticoreCoreZipFile core = (MulticoreCoreZipFile)e.Node.Tag;
-                        txtFileDetails.Text = core.HardDir.Readme+"\r\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\r\n"+ core.ZipContents;
+                        this.showCoreInfo((MulticoreCoreZipFile)e.Node.Tag);
                     }
                 }
             }
+        }
+
+        private void showCoreInfo(MulticoreCoreZipFile core)
+        {
+            this.clearInfo();
+            gbReadme.Visible = (!string.IsNullOrEmpty(core.HardDir.Readme));
+            txtReadme.Text = string.IsNullOrEmpty(core.HardDir.Readme) ? "" : core.HardDir.Readme;
+            txtZipContents.Text = core.ZipContents;
+            gbRomsDir.Visible = core.HardDir.TypeDir.HaveRoms;
+            txtRomsDir.Text = core.RomsFolder;
+            btBrowseRomDir.Tag = core;
+        }
+
+        private void btBrowseRomDir_Click(object sender, EventArgs e)
+        {
+            MulticoreCoreZipFile core = ((MulticoreCoreZipFile)btBrowseRomDir.Tag);
+            FolderBrowserDialog fbd = new FolderBrowserDialog()
+            {
+                ShowNewFolderButton = true,
+                Description = "Selecione o diretorio com as ROMS de " + core.HardDir.ToString()
+            };
+            if(fbd.ShowDialog() == DialogResult.OK)
+            {
+                if(fbd.SelectedPath != core.RomsFolder)
+                {
+                    core.RomsFolder = fbd.SelectedPath;
+                    txtRomsDir.Text = core.RomsFolder;
+                    if (_romsPath.ContainsKey(core.Name)) 
+                        _romsPath[core.Name] = core.RomsFolder; 
+                    else 
+                        _romsPath.Add(core.Name, core.RomsFolder);
+                    this.saveConfig();
+                }
+            }
+        }
+
+        private void clearInfo()
+        {
+            gbReadme.Visible = true;
+            txtReadme.Clear();
+            gbZipContents.Visible = true;
+            txtZipContents.Clear();
+            txtRomsDir.Clear();
         }
 
         private void cbMCModel_SelectedIndexChanged(object sender, EventArgs e)

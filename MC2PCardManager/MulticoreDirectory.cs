@@ -13,20 +13,20 @@ namespace MC2PCardManager
         Multicore1 = 1,
         Multicore2 = 2,
         Multicore2p = 3
-    }
+    }    
 
     [Serializable]
     public class MulticoreDirectory
     {
+        public Multicore2TypeDirectory TypeDir { get; set; }
         public DirectoryInfo DirInfo { get; set; }
         public string Readme { get; set; }
-        public string RomsFolder { get; set; }
         public List<MulticoreCoreZipFile> Cores { get; set; }
         public MulticoreDirectory()
         {
+            TypeDir = null;
             DirInfo = null;
             Readme = string.Empty;
-            RomsFolder = string.Empty;
             Cores = new List<MulticoreCoreZipFile>();
         }
     }
@@ -35,11 +35,14 @@ namespace MC2PCardManager
     public class Multicore2TypeDirectory
     {
         public string Name { get; set; }
+        public bool HaveRoms { get; set; }
+
         public List<MulticoreDirectory> Directories { get; set; }
 
         public Multicore2TypeDirectory()
         {
             Name = string.Empty;
+            HaveRoms = false;
             Directories = new List<MulticoreDirectory>();
         }
 
@@ -52,10 +55,19 @@ namespace MC2PCardManager
     [Serializable]
     public class MulticoreCoreZipFile
     {
+        public string Name
+        {
+            get
+            {
+                return FileInfo.Name.ToUpper().Replace(".ZIP", "");
+            }
+        }
         public MulticoreDirectory HardDir { get; set; }
         public FileInfo FileInfo { get; set; }
 
         public string ZipContents { get; set; }
+
+        public string RomsFolder { get; set; }
 
         public bool IsOnSD { get; set; }
         public bool SameName { get; set; }
@@ -64,6 +76,7 @@ namespace MC2PCardManager
         {
             HardDir = null;
             FileInfo = null;
+            RomsFolder = string.Empty;
             IsOnSD = false;
             SameName = false;
         }
