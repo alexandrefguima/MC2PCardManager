@@ -58,6 +58,7 @@ namespace MC2PCardManager
         {
             this.UncheckAllNodes(tvLocalPath.Nodes);
             List<TreeNode> nodesCores = new List<TreeNode>();
+            bool haveUpdates = false;
             foreach(TreeNode tnT in tvLocalPath.Nodes[0].Nodes)
             {
                 foreach (TreeNode tnC in tnT.Nodes) nodesCores.Add(tnC);
@@ -71,12 +72,22 @@ namespace MC2PCardManager
                     {
                         foreach (ZipEntry e in zip)
                         {
-                            tnCore.Checked = ((from FileInfo fiSD in this._sdCardFiles where fiSD.Name == e.FileName select fiSD.Name).FirstOrDefault() != null);
+                            FileInfo sdInfo = (from FileInfo fiSD in this._sdCardFiles where fiSD.Name == e.FileName select fiSD).FirstOrDefault();
+                            tnCore.Checked = (sdInfo != null);
+
+                            if (sdInfo == null) continue;
+
+                            #region check if was updated
+                            mcZip.WasUpdated = (sdInfo.Length != mcZip.FileInfo.Length) || (sdInfo.LastWriteTime != mcZip.FileInfo.LastWriteTime);
+                            if (mcZip.WasUpdated) tnCore.Tag = mcZip;
+                            haveUpdates |= mcZip.WasUpdated;
+                            #endregion check if was updated
                             //zipContents += e.FileName + "\r\n";
                             //if (!haveAll) break;
                         }
                     }
                 }
+                if (haveUpdates) tvLocalPath.Refresh();
             }
         }
 
@@ -296,6 +307,7 @@ namespace MC2PCardManager
             }
             tvLocalPath.Nodes.Add(root);
             tvLocalPath.Sort();
+            tvLocalPath.Nodes[0].Expand();
         }
 
         public void UncheckAllNodes(TreeNodeCollection nodes)
@@ -553,6 +565,30 @@ namespace MC2PCardManager
             gbRomsDir.Visible = core.HardDir.TypeDir.HaveRoms;
             txtRomsDir.Text = core.RomsFolder;
             btBrowseRomDir.Tag = core;
+            if (core.HardDir.TypeDir.HaveRoms) this.loadRomsTree(core); else tvRoms.Nodes.Clear();
+        }
+
+        private void loadRomsTree(MulticoreCoreZipFile core)
+        {
+            tvRoms.Nodes.Clear();
+            gbRoms.Text = "Roms para core selecionado";
+
+            if (string.IsNullOrEmpty(core.RomsFolder))
+            {
+                tvRoms.CheckBoxes = false;
+                tvRoms.Nodes.Add(new TreeNode("Diretório de ROMs não informado"));
+            }
+            else
+            {
+                gbRoms.Text += " (" + _sdDrive.DriveInfo.RootDirectory + "ROMS" + Path.DirectorySeparatorChar + core.Name + ")";
+                tvRoms.CheckBoxes = true;
+                DirectoryInfo di = new DirectoryInfo(core.RomsFolder);
+                foreach (FileInfo fi in di.GetFiles())
+                {
+                    TreeNode tn = new TreeNode(fi.Name) { Tag = fi };
+                    tvRoms.Nodes.Add(tn);
+                }
+            }
         }
 
         private void btBrowseRomDir_Click(object sender, EventArgs e)
@@ -578,6 +614,28 @@ namespace MC2PCardManager
             }
         }
 
+        private void btRomPaths_Click(object sender, EventArgs e)
+        {
+            using(FormRoms frmRoms = new FormRoms(this._romsPath, this._mc2repo))
+            {
+                if(frmRoms.ShowDialog(this)== DialogResult.OK)
+                {
+                    _romsPath = frmRoms.RomPaths;
+                    this.saveConfig();
+                }
+            }
+        }
+
+        private void tvLocalPath_DrawNode(object sender, DrawTreeNodeEventArgs e)
+        {
+            MulticoreCoreZipFile core = (MulticoreCoreZipFile)e.Node.Tag;
+            e.DrawDefault = !core.WasUpdated;
+            if (!e.DrawDefault)
+            {
+                
+            }
+        }
+
         private void clearInfo()
         {
             gbReadme.Visible = true;
@@ -585,6 +643,7 @@ namespace MC2PCardManager
             gbZipContents.Visible = true;
             txtZipContents.Clear();
             txtRomsDir.Clear();
+            tvRoms.Nodes.Clear();
         }
 
         private void cbMCModel_SelectedIndexChanged(object sender, EventArgs e)

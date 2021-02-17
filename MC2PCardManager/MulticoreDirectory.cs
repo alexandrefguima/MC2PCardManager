@@ -71,6 +71,7 @@ namespace MC2PCardManager
 
         public bool IsOnSD { get; set; }
         public bool SameName { get; set; }
+        public bool WasUpdated { get; set; }
 
         public MulticoreCoreZipFile()
         {
@@ -79,6 +80,7 @@ namespace MC2PCardManager
             RomsFolder = string.Empty;
             IsOnSD = false;
             SameName = false;
+            WasUpdated = false;
         }
 
         public override string ToString()
@@ -136,6 +138,23 @@ namespace MC2PCardManager
                 return ret;
             }
         }
+
+        public List<MulticoreCoreZipFile> CoresWithRoms
+        {
+            get
+            {
+                List<MulticoreCoreZipFile> ret = new List<MulticoreCoreZipFile>();
+                foreach (Multicore2TypeDirectory tDir in TypeDirs.Where(d => d.HaveRoms))
+                {
+                    foreach (MulticoreDirectory mcDir in tDir.Directories)
+                    {
+                        ret.AddRange(mcDir.Cores);
+                    }
+                }
+                return ret;
+            }
+        }
+
         public override string ToString()
         {
             return Model.ToString();
