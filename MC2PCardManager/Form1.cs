@@ -23,7 +23,7 @@ namespace MC2PCardManager
     {
         public static readonly string[] TYPES_WITH_ROMS = { "Computers", "Consoles"};
 
-        private bool _loading = true;
+        private bool _loading = true, _loadingRomsTree = false;
 
         private eMCModels _myModel = eMCModels.Undefined;
         private string
@@ -40,6 +40,8 @@ namespace MC2PCardManager
         private SDDriveInfo _sdDrive;
 
         private bool _waitingDowload = false;
+
+        private MulticoreCoreZipFile _selectedCore = null;
 
         public FormMain()
         {
@@ -88,6 +90,23 @@ namespace MC2PCardManager
                     }
                 }
                 if (haveUpdates) tvLocalPath.Refresh();
+            }
+        }
+
+        private void updateExistingRoms()
+        {
+            this.UncheckAllNodes(tvRoms.Nodes);
+            string sdRomPath = _sdDrive.DriveInfo.RootDirectory + "ROMS" + Path.DirectorySeparatorChar + this._selectedCore.Name + Path.DirectorySeparatorChar;
+            DirectoryInfo di = new DirectoryInfo(sdRomPath);
+            if (di.Exists)
+            {
+                List<FileInfo> sdFiles = di.GetFiles().ToList();
+                foreach (TreeNode tnRom in tvRoms.Nodes)
+                {
+                    FileInfo fi = (FileInfo)tnRom.Tag;
+                    string dPath = sdRomPath + fi.Name;
+                    tnRom.Checked = (from FileInfo sfi in sdFiles where sfi.Name.Equals(fi.Name) select sfi).FirstOrDefault() != null;
+                }
             }
         }
 
@@ -290,6 +309,7 @@ namespace MC2PCardManager
 
         private void loadTreeView()
         {
+            this._selectedCore = null;
             tvLocalPath.Nodes.Clear();
             TreeNode root = new TreeNode(_mc2repo.ToString());
             foreach(Multicore2TypeDirectory typeDir in _mc2repo.TypeDirs)
@@ -460,28 +480,6 @@ namespace MC2PCardManager
                 this.loadSDFiles();
             }
         }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            pBar.Value = 0;
-            pBar.Visible = true;
-            this._waitingDowload = true;
-            string downloadedFile = this.downloadLatest();
-            while (this._waitingDowload) 
-            {
-                Application.DoEvents();
-            }
-            if (!string.IsNullOrEmpty(downloadedFile))
-            {
-                extractDownloadedZip(downloadedFile);
-                loadLocalPath();
-            }
-            else
-            {
-                //erro no download
-            }
-        }
-
         private void btSaveConfig_Click(object sender, EventArgs e)
         {
             this.saveConfig();
@@ -558,6 +556,7 @@ namespace MC2PCardManager
 
         private void showCoreInfo(MulticoreCoreZipFile core)
         {
+            this._selectedCore = core;
             this.clearInfo();
             gbReadme.Visible = (!string.IsNullOrEmpty(core.HardDir.Readme));
             txtReadme.Text = string.IsNullOrEmpty(core.HardDir.Readme) ? "" : core.HardDir.Readme;
@@ -570,6 +569,7 @@ namespace MC2PCardManager
 
         private void loadRomsTree(MulticoreCoreZipFile core)
         {
+            _loadingRomsTree = true;
             tvRoms.Nodes.Clear();
             gbRoms.Text = "Roms para core selecionado";
 
@@ -588,7 +588,9 @@ namespace MC2PCardManager
                     TreeNode tn = new TreeNode(fi.Name) { Tag = fi };
                     tvRoms.Nodes.Add(tn);
                 }
+                this.updateExistingRoms();
             }
+            _loadingRomsTree = false;
         }
 
         private void btBrowseRomDir_Click(object sender, EventArgs e)
@@ -633,6 +635,87 @@ namespace MC2PCardManager
             if (!e.DrawDefault)
             {
                 
+            }
+        }
+
+        private void btGitLab_Click(object sender, EventArgs e)
+        {
+            btGitLab.Visible = false;
+            try
+            {
+                pBar.Value = 0;
+                pBar.Visible = true;
+                this._waitingDowload = true;
+                string downloadedFile = this.downloadLatest();
+                while (this._waitingDowload)
+                {
+                    Application.DoEvents();
+                }
+                if (!string.IsNullOrEmpty(downloadedFile))
+                {
+                    extractDownloadedZip(downloadedFile);
+                    loadLocalPath();
+                }
+                else
+                {
+                    //erro no download
+                }
+            }
+            finally
+            {
+                btGitLab.Visible = false;
+            }
+        }
+
+        private void tvRoms_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (_loadingRomsTree) return;
+
+            FileInfo fi = (FileInfo)e.Node.Tag;
+            string
+                oPath = fi.FullName,
+                dPath = _sdDrive.DriveInfo.RootDirectory + "ROMS" + Path.DirectorySeparatorChar + this._selectedCore.Name + Path.DirectorySeparatorChar + fi.Name;
+            if (e.Node.Checked) //adiciona
+            {
+                try
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+                    try
+                    {
+                        if (!Directory.Exists(Path.GetDirectoryName(dPath)))
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(dPath));
+                        }
+                        File.Copy(oPath, dPath);
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+                finally
+                {
+                    Cursor.Current = Cursors.Default;
+                }
+            }
+            else //remove
+            {
+                try
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+                    try
+                    {
+                        if (File.Exists(dPath)) File.Delete(dPath);
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+                finally
+                {
+                    Cursor.Current = Cursors.Default;
+                }
             }
         }
 
@@ -681,7 +764,13 @@ namespace MC2PCardManager
         }
         public override string ToString()
         {
-            return string.Format("{0} [{1}Gb] ({2}) - {3} Mb livres", this._info.VolumeLabel, this._info.TotalFreeSpace / 1024 / 1024 / 1024, this._info.Name.Replace("\\", ""), this._info.TotalFreeSpace / 1024 / 1024);
+            return string.Format(
+                "{0} [{1} - {2}] - {3} Mb livres",
+                this._info.Name.Replace("\\", ""), 
+                this._info.VolumeLabel,                
+                this._info.DriveFormat,
+                this._info.TotalFreeSpace / 1024 / 1024
+            );
         }
     }
 }

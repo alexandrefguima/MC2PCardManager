@@ -30,13 +30,13 @@ namespace MC2PCardManager
         private void InitializeComponent()
         {
             this.pnBottom = new System.Windows.Forms.Panel();
+            this.btOK = new System.Windows.Forms.Button();
+            this.btCancelar = new System.Windows.Forms.Button();
             this.lvRoms = new System.Windows.Forms.ListView();
             this.colType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colCore = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colClear = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.btCancelar = new System.Windows.Forms.Button();
-            this.btOK = new System.Windows.Forms.Button();
             this.pnBottom.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -49,6 +49,26 @@ namespace MC2PCardManager
             this.pnBottom.Name = "pnBottom";
             this.pnBottom.Size = new System.Drawing.Size(800, 58);
             this.pnBottom.TabIndex = 0;
+            // 
+            // btOK
+            // 
+            this.btOK.Location = new System.Drawing.Point(193, 6);
+            this.btOK.Name = "btOK";
+            this.btOK.Size = new System.Drawing.Size(122, 40);
+            this.btOK.TabIndex = 0;
+            this.btOK.Text = "OK";
+            this.btOK.UseVisualStyleBackColor = true;
+            this.btOK.Click += new System.EventHandler(this.btOK_Click);
+            // 
+            // btCancelar
+            // 
+            this.btCancelar.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btCancelar.Location = new System.Drawing.Point(491, 6);
+            this.btCancelar.Name = "btCancelar";
+            this.btCancelar.Size = new System.Drawing.Size(122, 40);
+            this.btCancelar.TabIndex = 0;
+            this.btCancelar.Text = "CANCELAR";
+            this.btCancelar.UseVisualStyleBackColor = true;
             // 
             // lvRoms
             // 
@@ -93,24 +113,6 @@ namespace MC2PCardManager
             // 
             this.colClear.Text = "";
             this.colClear.Width = 20;
-            // 
-            // btCancelar
-            // 
-            this.btCancelar.Location = new System.Drawing.Point(491, 6);
-            this.btCancelar.Name = "btCancelar";
-            this.btCancelar.Size = new System.Drawing.Size(122, 40);
-            this.btCancelar.TabIndex = 0;
-            this.btCancelar.Text = "CANCELAR";
-            this.btCancelar.UseVisualStyleBackColor = true;
-            // 
-            // btOK
-            // 
-            this.btOK.Location = new System.Drawing.Point(193, 6);
-            this.btOK.Name = "btOK";
-            this.btOK.Size = new System.Drawing.Size(122, 40);
-            this.btOK.TabIndex = 0;
-            this.btOK.Text = "OK";
-            this.btOK.UseVisualStyleBackColor = true;
             // 
             // FormRoms
             // 

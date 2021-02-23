@@ -69,20 +69,30 @@ namespace MC2PCardManager
                         FolderBrowserDialog fbd = new FolderBrowserDialog()
                         {
                             ShowNewFolderButton = true,
-                            Description = "Selecione o diretorio com as ROMS de " + core.HardDir.ToString(), 
+                            Description = "Selecione o diretorio com as ROMS de " + core.HardDir.DirInfo.Name, 
                             SelectedPath = core.RomsFolder
                         };
                         if (fbd.ShowDialog() == DialogResult.OK)
                         {
                             if (fbd.SelectedPath != core.RomsFolder)
                             {
-                                core.RomsFolder = fbd.SelectedPath;
+                                //core.RomsFolder = fbd.SelectedPath;
+                                if (_romPaths.ContainsKey(core.HardDir.DirInfo.Name.ToUpper()))
+                                    _romPaths[core.HardDir.DirInfo.Name.ToUpper()] = fbd.SelectedPath;
+                                else
+                                    _romPaths.Add(core.HardDir.DirInfo.Name.ToUpper(), fbd.SelectedPath);
+                                hitTest.Item.SubItems[2].Text = fbd.SelectedPath;
                                 lvRoms.Refresh();
                             }
                         }
                     }
                 }
             }
+        }
+
+        private void btOK_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
         }
     }
 }

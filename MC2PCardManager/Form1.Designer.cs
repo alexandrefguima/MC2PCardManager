@@ -30,10 +30,10 @@ namespace MC2PCardManager
         private void InitializeComponent()
         {
             this.pnTop = new System.Windows.Forms.Panel();
+            this.btGitLab = new System.Windows.Forms.Button();
             this.btRomPaths = new System.Windows.Forms.Button();
             this.lbProgressMsg = new System.Windows.Forms.Label();
             this.pBar = new System.Windows.Forms.ProgressBar();
-            this.button1 = new System.Windows.Forms.Button();
             this.btSaveConfig = new System.Windows.Forms.Button();
             this.cbMCModel = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -71,10 +71,10 @@ namespace MC2PCardManager
             // 
             // pnTop
             // 
+            this.pnTop.Controls.Add(this.btGitLab);
             this.pnTop.Controls.Add(this.btRomPaths);
             this.pnTop.Controls.Add(this.lbProgressMsg);
             this.pnTop.Controls.Add(this.pBar);
-            this.pnTop.Controls.Add(this.button1);
             this.pnTop.Controls.Add(this.btSaveConfig);
             this.pnTop.Controls.Add(this.cbMCModel);
             this.pnTop.Controls.Add(this.label3);
@@ -89,6 +89,16 @@ namespace MC2PCardManager
             this.pnTop.Name = "pnTop";
             this.pnTop.Size = new System.Drawing.Size(953, 107);
             this.pnTop.TabIndex = 0;
+            // 
+            // btGitLab
+            // 
+            this.btGitLab.Location = new System.Drawing.Point(402, 80);
+            this.btGitLab.Name = "btGitLab";
+            this.btGitLab.Size = new System.Drawing.Size(200, 23);
+            this.btGitLab.TabIndex = 9;
+            this.btGitLab.Text = "Verificar atualização no GitLab";
+            this.btGitLab.UseVisualStyleBackColor = true;
+            this.btGitLab.Click += new System.EventHandler(this.btGitLab_Click);
             // 
             // btRomPaths
             // 
@@ -122,16 +132,6 @@ namespace MC2PCardManager
             this.pBar.Size = new System.Drawing.Size(953, 14);
             this.pBar.TabIndex = 10;
             this.pBar.Visible = false;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(469, 33);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 9;
-            this.button1.Text = "Verif. atualiz.";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // btSaveConfig
             // 
@@ -368,6 +368,7 @@ namespace MC2PCardManager
             this.tvRoms.Name = "tvRoms";
             this.tvRoms.Size = new System.Drawing.Size(253, 324);
             this.tvRoms.TabIndex = 0;
+            this.tvRoms.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvRoms_AfterCheck);
             // 
             // FormMain
             // 
@@ -414,7 +415,7 @@ namespace MC2PCardManager
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btSaveConfig;
         private System.Windows.Forms.TextBox txtReadme;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btGitLab;
         private System.Windows.Forms.ProgressBar pBar;
         private System.Windows.Forms.Label lbProgressMsg;
         private System.Windows.Forms.GroupBox gbInfo;
