@@ -569,28 +569,36 @@ namespace MC2PCardManager
 
         private void loadRomsTree(MulticoreCoreZipFile core)
         {
-            _loadingRomsTree = true;
-            tvRoms.Nodes.Clear();
-            gbRoms.Text = "Roms para core selecionado";
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                _loadingRomsTree = true;
+                tvRoms.Nodes.Clear();
+                gbRoms.Text = "Roms para core selecionado";
 
-            if (string.IsNullOrEmpty(core.RomsFolder))
-            {
-                tvRoms.CheckBoxes = false;
-                tvRoms.Nodes.Add(new TreeNode("Diretório de ROMs não informado"));
-            }
-            else
-            {
-                gbRoms.Text += " (" + _sdDrive.DriveInfo.RootDirectory + "ROMS" + Path.DirectorySeparatorChar + core.Name + ")";
-                tvRoms.CheckBoxes = true;
-                DirectoryInfo di = new DirectoryInfo(core.RomsFolder);
-                foreach (FileInfo fi in di.GetFiles())
+                if (string.IsNullOrEmpty(core.RomsFolder))
                 {
-                    TreeNode tn = new TreeNode(fi.Name) { Tag = fi };
-                    tvRoms.Nodes.Add(tn);
+                    tvRoms.CheckBoxes = false;
+                    tvRoms.Nodes.Add(new TreeNode("Diretório de ROMs não informado"));
                 }
-                this.updateExistingRoms();
+                else
+                {
+                    gbRoms.Text += " (" + _sdDrive.DriveInfo.RootDirectory + "ROMS" + Path.DirectorySeparatorChar + core.Name + ")";
+                    tvRoms.CheckBoxes = true;
+                    DirectoryInfo di = new DirectoryInfo(core.RomsFolder);
+                    foreach (FileInfo fi in di.GetFiles())
+                    {
+                        TreeNode tn = new TreeNode(fi.Name) { Tag = fi };
+                        tvRoms.Nodes.Add(tn);
+                    }
+                    this.updateExistingRoms();
+                }
             }
-            _loadingRomsTree = false;
+            finally
+            {
+                _loadingRomsTree = false;
+                Cursor.Current = Cursors.Default;
+            }
         }
 
         private void btBrowseRomDir_Click(object sender, EventArgs e)
@@ -618,12 +626,13 @@ namespace MC2PCardManager
 
         private void btRomPaths_Click(object sender, EventArgs e)
         {
-            using(FormRoms frmRoms = new FormRoms(this._romsPath, this._mc2repo))
+            using (FormRoms frmRoms = new FormRoms(this._romsPath, this._mc2repo))
             {
-                if(frmRoms.ShowDialog(this)== DialogResult.OK)
+                if (frmRoms.ShowDialog(this) == DialogResult.OK)
                 {
                     _romsPath = frmRoms.RomPaths;
                     this.saveConfig();
+                    this.loadRomsTree(this._selectedCore);
                 }
             }
         }
