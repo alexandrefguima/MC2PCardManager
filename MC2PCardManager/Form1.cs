@@ -487,10 +487,9 @@ namespace MC2PCardManager
 
         private void tvLocalPath_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            return;
             if (e.Node.Level == 2) // nodes dos itens
             {
-                FileInfo fi = (FileInfo)e.Node.Tag;
+                FileInfo fi = ((MulticoreCoreZipFile)e.Node.Tag).FileInfo;
                 using (ZipFile zip = ZipFile.Read(fi.FullName))
                 {
                     if (e.Node.Checked) //adiciona
