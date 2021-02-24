@@ -1,4 +1,5 @@
-﻿using Ionic.Zip;
+﻿using GitLabApiClient;
+using Ionic.Zip;
 using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json;
 using System;
@@ -418,6 +419,7 @@ namespace MC2PCardManager
 
                         if ((ee.Error != null) || (ee.Cancelled))
                         {
+                             ret = "ERRO - " + (ee.Cancelled ? "Download cancelado" : ee.Error.Message);
                             return;
                         }
                     };
@@ -427,6 +429,7 @@ namespace MC2PCardManager
             catch (Exception ex)
             {
                 ret = string.Empty;
+                ret = "ERRO - " + ex.Message;
             }
             return ret;
         }
@@ -646,6 +649,31 @@ namespace MC2PCardManager
             }
         }
 
+        private async Task<string> downloadLatestGibLabAsync()
+        {
+            string ret = string.Empty;
+            try
+            {
+                try
+                {
+                    var client = new GitLabClient("https://gitlab.com/victor.trucco");
+                    await client.LoginAsync("alexandrefguima@gmail.com", "Caoldexr@2020");
+                    var prjs = await client.Projects.GetAsync();
+                    Thread.Sleep(8000);
+                    Console.WriteLine("");
+                }
+                catch (Exception ex)
+                {
+                    ret = $"ERRO: {ex.Message}";
+                }
+            }
+            finally
+            {
+                this._waitingDowload = false;
+            }
+            return ret;
+        }
+
         private void btGitLab_Click(object sender, EventArgs e)
         {
             btGitLab.Visible = false;
@@ -654,19 +682,22 @@ namespace MC2PCardManager
                 pBar.Value = 0;
                 pBar.Visible = true;
                 this._waitingDowload = true;
-                string downloadedFile = this.downloadLatest();
+                Task<string> downloadedFile = this.downloadLatestGibLabAsync(); //this.downloadLatest();
+                //downloadedFile.Wait();
+                
                 while (this._waitingDowload)
                 {
                     Application.DoEvents();
                 }
-                if (!string.IsNullOrEmpty(downloadedFile))
+                
+                if (downloadedFile.Result.StartsWith("ERRO"))
                 {
-                    extractDownloadedZip(downloadedFile);
-                    loadLocalPath();
+                    MessageBox.Show("PROBLEMA NO DOWNLOAD:\n" + downloadedFile.Result);
                 }
-                else
+                else 
                 {
-                    //erro no download
+                    extractDownloadedZip(downloadedFile.Result);
+                    loadLocalPath();
                 }
             }
             finally
