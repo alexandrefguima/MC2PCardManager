@@ -37,18 +37,6 @@ namespace MC2PCardManager.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("W:\\Multicore_Bitstreams")]
-        public string LocalPath {
-            get {
-                return ((string)(this["LocalPath"]));
-            }
-            set {
-                this["LocalPath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Não definido;Multicore 1;Multicore 2;Multicore 2+")]
         public string MCModels {
             get {
@@ -80,6 +68,18 @@ namespace MC2PCardManager.Properties {
             }
             set {
                 this["RomsPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LocalPath {
+            get {
+                return ((string)(this["LocalPath"]));
+            }
+            set {
+                this["LocalPath"] = value;
             }
         }
     }

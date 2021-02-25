@@ -78,8 +78,10 @@ namespace MC2PCardManager
             this.colPath,
             this.colClear});
             this.lvRoms.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvRoms.FullRowSelect = true;
             this.lvRoms.GridLines = true;
             this.lvRoms.HideSelection = false;
+            this.lvRoms.HoverSelection = true;
             this.lvRoms.Location = new System.Drawing.Point(0, 0);
             this.lvRoms.MultiSelect = false;
             this.lvRoms.Name = "lvRoms";

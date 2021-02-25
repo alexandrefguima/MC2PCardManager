@@ -5,9 +5,6 @@
     <Setting Name="CurrentHead" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LocalPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">W:\Multicore_Bitstreams</Value>
-    </Setting>
     <Setting Name="MCModels" Type="System.String" Scope="User">
       <Value Profile="(Default)">Não definido;Multicore 1;Multicore 2;Multicore 2+</Value>
     </Setting>
@@ -15,6 +12,9 @@
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="RomsPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LocalPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

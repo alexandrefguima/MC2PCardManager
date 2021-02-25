@@ -73,6 +73,38 @@ namespace MC2PCardManager
         public bool SameName { get; set; }
         public bool WasUpdated { get; set; }
 
+        public bool IsConsole
+        {
+            get
+            {
+                bool ret = false;
+                if(HardDir != null)
+                {
+                    if (HardDir.TypeDir != null)
+                    {
+                        ret = HardDir.TypeDir.Name.ToUpper().Equals("CONSOLES");
+                    }
+                }
+                return ret;
+            }
+        }
+
+        public bool IsComputer
+        {
+            get
+            {
+                bool ret = false;
+                if (HardDir != null)
+                {
+                    if (HardDir.TypeDir != null)
+                    {
+                        ret = HardDir.TypeDir.Name.ToUpper().Equals("COMPUTERS");
+                    }
+                }
+                return ret;
+            }
+        }
+
         public MulticoreCoreZipFile()
         {
             HardDir = null;

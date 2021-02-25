@@ -56,6 +56,7 @@ namespace MC2PCardManager
             this.txtRomsDir = new System.Windows.Forms.TextBox();
             this.gbRoms = new System.Windows.Forms.GroupBox();
             this.tvRoms = new System.Windows.Forms.TreeView();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.pnTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -67,6 +68,10 @@ namespace MC2PCardManager
             this.gbZipContents.SuspendLayout();
             this.gbRomsDir.SuspendLayout();
             this.gbRoms.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnTop
@@ -232,8 +237,7 @@ namespace MC2PCardManager
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.gbInfo);
-            this.splitContainer1.Panel2.Controls.Add(this.gbRoms);
+            this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Size = new System.Drawing.Size(953, 343);
             this.splitContainer1.SplitterDistance = 316;
             this.splitContainer1.TabIndex = 1;
@@ -269,7 +273,7 @@ namespace MC2PCardManager
             this.gbInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gbInfo.Location = new System.Drawing.Point(0, 0);
             this.gbInfo.Name = "gbInfo";
-            this.gbInfo.Size = new System.Drawing.Size(374, 343);
+            this.gbInfo.Size = new System.Drawing.Size(345, 343);
             this.gbInfo.TabIndex = 1;
             this.gbInfo.TabStop = false;
             this.gbInfo.Text = "Informações do core selecionado";
@@ -280,7 +284,7 @@ namespace MC2PCardManager
             this.gbReadme.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gbReadme.Location = new System.Drawing.Point(3, 16);
             this.gbReadme.Name = "gbReadme";
-            this.gbReadme.Size = new System.Drawing.Size(368, 164);
+            this.gbReadme.Size = new System.Drawing.Size(339, 164);
             this.gbReadme.TabIndex = 0;
             this.gbReadme.TabStop = false;
             this.gbReadme.Text = "README";
@@ -292,7 +296,7 @@ namespace MC2PCardManager
             this.txtReadme.Multiline = true;
             this.txtReadme.Name = "txtReadme";
             this.txtReadme.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtReadme.Size = new System.Drawing.Size(362, 145);
+            this.txtReadme.Size = new System.Drawing.Size(333, 145);
             this.txtReadme.TabIndex = 0;
             // 
             // gbZipContents
@@ -301,7 +305,7 @@ namespace MC2PCardManager
             this.gbZipContents.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.gbZipContents.Location = new System.Drawing.Point(3, 180);
             this.gbZipContents.Name = "gbZipContents";
-            this.gbZipContents.Size = new System.Drawing.Size(368, 119);
+            this.gbZipContents.Size = new System.Drawing.Size(339, 119);
             this.gbZipContents.TabIndex = 1;
             this.gbZipContents.TabStop = false;
             this.gbZipContents.Text = "Conteúdo do zip";
@@ -313,7 +317,7 @@ namespace MC2PCardManager
             this.txtZipContents.Multiline = true;
             this.txtZipContents.Name = "txtZipContents";
             this.txtZipContents.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtZipContents.Size = new System.Drawing.Size(362, 100);
+            this.txtZipContents.Size = new System.Drawing.Size(333, 100);
             this.txtZipContents.TabIndex = 0;
             // 
             // gbRomsDir
@@ -323,7 +327,7 @@ namespace MC2PCardManager
             this.gbRomsDir.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.gbRomsDir.Location = new System.Drawing.Point(3, 299);
             this.gbRomsDir.Name = "gbRomsDir";
-            this.gbRomsDir.Size = new System.Drawing.Size(368, 41);
+            this.gbRomsDir.Size = new System.Drawing.Size(339, 41);
             this.gbRomsDir.TabIndex = 2;
             this.gbRomsDir.TabStop = false;
             this.gbRomsDir.Text = "Diretório LOCAL de ROMs";
@@ -331,7 +335,7 @@ namespace MC2PCardManager
             // btBrowseRomDir
             // 
             this.btBrowseRomDir.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btBrowseRomDir.Location = new System.Drawing.Point(340, 14);
+            this.btBrowseRomDir.Location = new System.Drawing.Point(311, 14);
             this.btBrowseRomDir.Name = "btBrowseRomDir";
             this.btBrowseRomDir.Size = new System.Drawing.Size(25, 22);
             this.btBrowseRomDir.TabIndex = 1;
@@ -345,16 +349,16 @@ namespace MC2PCardManager
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtRomsDir.Location = new System.Drawing.Point(6, 15);
             this.txtRomsDir.Name = "txtRomsDir";
-            this.txtRomsDir.Size = new System.Drawing.Size(334, 20);
+            this.txtRomsDir.Size = new System.Drawing.Size(305, 20);
             this.txtRomsDir.TabIndex = 0;
             // 
             // gbRoms
             // 
             this.gbRoms.Controls.Add(this.tvRoms);
-            this.gbRoms.Dock = System.Windows.Forms.DockStyle.Right;
-            this.gbRoms.Location = new System.Drawing.Point(374, 0);
+            this.gbRoms.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gbRoms.Location = new System.Drawing.Point(0, 0);
             this.gbRoms.Name = "gbRoms";
-            this.gbRoms.Size = new System.Drawing.Size(259, 343);
+            this.gbRoms.Size = new System.Drawing.Size(284, 343);
             this.gbRoms.TabIndex = 12;
             this.gbRoms.TabStop = false;
             this.gbRoms.Text = "Roms para core selecionado";
@@ -366,9 +370,26 @@ namespace MC2PCardManager
             this.tvRoms.HideSelection = false;
             this.tvRoms.Location = new System.Drawing.Point(3, 16);
             this.tvRoms.Name = "tvRoms";
-            this.tvRoms.Size = new System.Drawing.Size(253, 324);
+            this.tvRoms.Size = new System.Drawing.Size(278, 324);
             this.tvRoms.TabIndex = 0;
             this.tvRoms.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvRoms_AfterCheck);
+            // 
+            // splitContainer2
+            // 
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.gbInfo);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.gbRoms);
+            this.splitContainer2.Size = new System.Drawing.Size(633, 343);
+            this.splitContainer2.SplitterDistance = 345;
+            this.splitContainer2.TabIndex = 0;
             // 
             // FormMain
             // 
@@ -396,6 +417,10 @@ namespace MC2PCardManager
             this.gbRomsDir.ResumeLayout(false);
             this.gbRomsDir.PerformLayout();
             this.gbRoms.ResumeLayout(false);
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -429,6 +454,7 @@ namespace MC2PCardManager
         private System.Windows.Forms.GroupBox gbCores;
         private System.Windows.Forms.GroupBox gbRoms;
         private System.Windows.Forms.TreeView tvRoms;
+        private System.Windows.Forms.SplitContainer splitContainer2;
     }
 }
 

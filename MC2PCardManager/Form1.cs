@@ -24,7 +24,7 @@ namespace MC2PCardManager
     {
         public static readonly string[] TYPES_WITH_ROMS = { "Computers", "Consoles"};
 
-        private bool _loading = true, _loadingRomsTree = false;
+        private bool _loading = true;
 
         private eMCModels _myModel = eMCModels.Undefined;
         private string
@@ -54,7 +54,6 @@ namespace MC2PCardManager
             this._sdCardFiles.Clear();            
             DirectoryInfo dirInfo = new DirectoryInfo(this._sdDrive.DriveInfo.Name);
             this._sdCardFiles.AddRange(dirInfo.GetFiles());
-            //this.loadLocalPath();
             if (tvLocalPath.Nodes.Count > 0) updateExistingCores();
         }
         private void updateExistingCores()
@@ -73,6 +72,7 @@ namespace MC2PCardManager
                     MulticoreCoreZipFile mcZip = (MulticoreCoreZipFile)tnCore.Tag;
                     using (ZipFile zip = ZipFile.Read(mcZip.FileInfo.FullName))
                     {
+                        _loading = true;
                         foreach (ZipEntry e in zip)
                         {
                             FileInfo sdInfo = (from FileInfo fiSD in this._sdCardFiles where fiSD.Name == e.FileName select fiSD).FirstOrDefault();
@@ -88,6 +88,7 @@ namespace MC2PCardManager
                             //zipContents += e.FileName + "\r\n";
                             //if (!haveAll) break;
                         }
+                        _loading = false;
                     }
                 }
                 if (haveUpdates) tvLocalPath.Refresh();
@@ -351,7 +352,7 @@ namespace MC2PCardManager
 
         private void loadLocalPath()
         {
-            if (_loading) return; //previne repetição ao abrir o programa
+            //if (_loading) return; //previne repetição ao abrir o programa
 
             Cursor.Current = Cursors.WaitCursor;
             tvLocalPath.Nodes.Clear();
@@ -393,9 +394,9 @@ namespace MC2PCardManager
             }
             txtLocalPath.Text = this._localPath;
             
-            _loading = false;
             this.loadLocalPath();
             this.loadRemovableDrives();
+            _loading = false;
         }
 
         private string downloadLatest()
@@ -490,6 +491,8 @@ namespace MC2PCardManager
 
         private void tvLocalPath_AfterCheck(object sender, TreeViewEventArgs e)
         {
+            if (_loading) return;
+
             if (e.Node.Level == 2) // nodes dos itens
             {
                 FileInfo fi = ((MulticoreCoreZipFile)e.Node.Tag).FileInfo;
@@ -574,7 +577,7 @@ namespace MC2PCardManager
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
-                _loadingRomsTree = true;
+                _loading= true;
                 tvRoms.Nodes.Clear();
                 gbRoms.Text = "Roms para core selecionado";
 
@@ -588,6 +591,7 @@ namespace MC2PCardManager
                     gbRoms.Text += " (" + _sdDrive.DriveInfo.RootDirectory + "ROMS" + Path.DirectorySeparatorChar + core.Name + ")";
                     tvRoms.CheckBoxes = true;
                     DirectoryInfo di = new DirectoryInfo(core.RomsFolder);
+                    //foreach(DirectoryInfo dis in di.GetDirectories()) { }
                     foreach (FileInfo fi in di.GetFiles())
                     {
                         TreeNode tn = new TreeNode(fi.Name) { Tag = fi };
@@ -598,7 +602,7 @@ namespace MC2PCardManager
             }
             finally
             {
-                _loadingRomsTree = false;
+                _loading= false;
                 Cursor.Current = Cursors.Default;
             }
         }
@@ -649,31 +653,6 @@ namespace MC2PCardManager
             }
         }
 
-        private async Task<string> downloadLatestGibLabAsync()
-        {
-            string ret = string.Empty;
-            try
-            {
-                try
-                {
-                    var client = new GitLabClient("https://gitlab.com/victor.trucco");
-                    await client.LoginAsync("alexandrefguima@gmail.com", "Caoldexr@2020");
-                    var prjs = await client.Projects.GetAsync();
-                    Thread.Sleep(8000);
-                    Console.WriteLine("");
-                }
-                catch (Exception ex)
-                {
-                    ret = $"ERRO: {ex.Message}";
-                }
-            }
-            finally
-            {
-                this._waitingDowload = false;
-            }
-            return ret;
-        }
-
         private void btGitLab_Click(object sender, EventArgs e)
         {
             btGitLab.Visible = false;
@@ -682,7 +661,7 @@ namespace MC2PCardManager
                 pBar.Value = 0;
                 pBar.Visible = true;
                 this._waitingDowload = true;
-                Task<string> downloadedFile = this.downloadLatestGibLabAsync(); //this.downloadLatest();
+                string downloadedResult = this.downloadLatest();
                 //downloadedFile.Wait();
                 
                 while (this._waitingDowload)
@@ -690,13 +669,13 @@ namespace MC2PCardManager
                     Application.DoEvents();
                 }
                 
-                if (downloadedFile.Result.StartsWith("ERRO"))
+                if (downloadedResult.StartsWith("ERRO"))
                 {
-                    MessageBox.Show("PROBLEMA NO DOWNLOAD:\n" + downloadedFile.Result);
+                    MessageBox.Show("PROBLEMA NO DOWNLOAD:\n" + downloadedResult);
                 }
                 else 
                 {
-                    extractDownloadedZip(downloadedFile.Result);
+                    extractDownloadedZip(downloadedResult);
                     loadLocalPath();
                 }
             }
@@ -708,7 +687,7 @@ namespace MC2PCardManager
 
         private void tvRoms_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            if (_loadingRomsTree) return;
+            if (_loading) return;
 
             FileInfo fi = (FileInfo)e.Node.Tag;
             string
@@ -726,6 +705,12 @@ namespace MC2PCardManager
                             Directory.CreateDirectory(Path.GetDirectoryName(dPath));
                         }
                         File.Copy(oPath, dPath);
+                        
+                        if (fi.Extension.ToUpper().Equals(".ZIP"))
+                        {
+
+                        }
+                        
                     }
                     catch (Exception ex)
                     {
