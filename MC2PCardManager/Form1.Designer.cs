@@ -46,6 +46,7 @@ namespace MC2PCardManager
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.gbCores = new System.Windows.Forms.GroupBox();
             this.tvLocalPath = new System.Windows.Forms.TreeView();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.gbInfo = new System.Windows.Forms.GroupBox();
             this.gbReadme = new System.Windows.Forms.GroupBox();
             this.txtReadme = new System.Windows.Forms.TextBox();
@@ -56,22 +57,21 @@ namespace MC2PCardManager
             this.txtRomsDir = new System.Windows.Forms.TextBox();
             this.gbRoms = new System.Windows.Forms.GroupBox();
             this.tvRoms = new System.Windows.Forms.TreeView();
-            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.pnTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.gbCores.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
             this.gbInfo.SuspendLayout();
             this.gbReadme.SuspendLayout();
             this.gbZipContents.SuspendLayout();
             this.gbRomsDir.SuspendLayout();
             this.gbRoms.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
-            this.splitContainer2.Panel1.SuspendLayout();
-            this.splitContainer2.Panel2.SuspendLayout();
-            this.splitContainer2.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnTop
@@ -265,6 +265,23 @@ namespace MC2PCardManager
             this.tvLocalPath.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.tvLocalPath_DrawNode);
             this.tvLocalPath.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvLocalPath_AfterSelect);
             // 
+            // splitContainer2
+            // 
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.gbInfo);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.gbRoms);
+            this.splitContainer2.Size = new System.Drawing.Size(633, 343);
+            this.splitContainer2.SplitterDistance = 345;
+            this.splitContainer2.TabIndex = 0;
+            // 
             // gbInfo
             // 
             this.gbInfo.Controls.Add(this.gbReadme);
@@ -374,23 +391,6 @@ namespace MC2PCardManager
             this.tvRoms.TabIndex = 0;
             this.tvRoms.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvRoms_AfterCheck);
             // 
-            // splitContainer2
-            // 
-            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer2.Name = "splitContainer2";
-            // 
-            // splitContainer2.Panel1
-            // 
-            this.splitContainer2.Panel1.Controls.Add(this.gbInfo);
-            // 
-            // splitContainer2.Panel2
-            // 
-            this.splitContainer2.Panel2.Controls.Add(this.gbRoms);
-            this.splitContainer2.Size = new System.Drawing.Size(633, 343);
-            this.splitContainer2.SplitterDistance = 345;
-            this.splitContainer2.TabIndex = 0;
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -409,6 +409,10 @@ namespace MC2PCardManager
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.gbCores.ResumeLayout(false);
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
             this.gbInfo.ResumeLayout(false);
             this.gbReadme.ResumeLayout(false);
             this.gbReadme.PerformLayout();
@@ -417,10 +421,6 @@ namespace MC2PCardManager
             this.gbRomsDir.ResumeLayout(false);
             this.gbRomsDir.PerformLayout();
             this.gbRoms.ResumeLayout(false);
-            this.splitContainer2.Panel1.ResumeLayout(false);
-            this.splitContainer2.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
-            this.splitContainer2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

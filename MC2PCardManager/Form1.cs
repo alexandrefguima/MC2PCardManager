@@ -1,5 +1,4 @@
-﻿using GitLabApiClient;
-using Ionic.Zip;
+﻿using Ionic.Zip;
 using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json;
 using System;
@@ -17,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using HtmlAgilityPack;
 
 namespace MC2PCardManager
 {
@@ -24,13 +24,14 @@ namespace MC2PCardManager
     {
         public static readonly string[] TYPES_WITH_ROMS = { "Computers", "Consoles"};
 
-        private bool _loading = true;
+        private bool _loading = true, updateAvailable = false;
 
         private eMCModels _myModel = eMCModels.Undefined;
         private string
             _localPath = "",
-            _currentHead = "",
-            _modelFolder = ""
+            _localtHead = "",
+            _modelFolder = "",
+            _onlineHead = ""
         ;
 
         private Dictionary<string, string> _romsPath = new Dictionary<string, string>();
@@ -58,6 +59,9 @@ namespace MC2PCardManager
         }
         private void updateExistingCores()
         {
+            bool loadingFlag = !_loading;
+            if (loadingFlag) _loading = true;
+
             this.UncheckAllNodes(tvLocalPath.Nodes);
             List<TreeNode> nodesCores = new List<TreeNode>();
             bool haveUpdates = false;
@@ -72,7 +76,7 @@ namespace MC2PCardManager
                     MulticoreCoreZipFile mcZip = (MulticoreCoreZipFile)tnCore.Tag;
                     using (ZipFile zip = ZipFile.Read(mcZip.FileInfo.FullName))
                     {
-                        _loading = true;
+
                         foreach (ZipEntry e in zip)
                         {
                             FileInfo sdInfo = (from FileInfo fiSD in this._sdCardFiles where fiSD.Name == e.FileName select fiSD).FirstOrDefault();
@@ -88,11 +92,11 @@ namespace MC2PCardManager
                             //zipContents += e.FileName + "\r\n";
                             //if (!haveAll) break;
                         }
-                        _loading = false;
                     }
                 }
                 if (haveUpdates) tvLocalPath.Refresh();
             }
+            if (loadingFlag) _loading = false;
         }
 
         private void updateExistingRoms()
@@ -115,7 +119,7 @@ namespace MC2PCardManager
         private void loadConfig()
         {
             this._localPath = Properties.Settings.Default.LocalPath;
-            this._currentHead = Properties.Settings.Default.CurrentHead;
+            this._localtHead = Properties.Settings.Default.CurrentHead;
             string[] models = Properties.Settings.Default.MCModels.Split(';');
             foreach (string model in models) cbMCModel.Items.Add(model);
             this._myModel = (eMCModels)Properties.Settings.Default.MyMCModel;
@@ -136,10 +140,19 @@ namespace MC2PCardManager
             }
         }
 
+        private void resetConfig()
+        {
+            Properties.Settings.Default.LocalPath = "";
+            Properties.Settings.Default.CurrentHead = "";
+            Properties.Settings.Default.MyMCModel = 0;
+            Properties.Settings.Default.RomsPath = "";
+            Properties.Settings.Default.Save();
+        }
+
         private void saveConfig()
         {
             Properties.Settings.Default.LocalPath = this._localPath;
-            Properties.Settings.Default.CurrentHead = this._currentHead;
+            Properties.Settings.Default.CurrentHead = this._localtHead;
             Properties.Settings.Default.MyMCModel = (int)this._myModel;
             if (_romsPath.Count > 0)
             {
@@ -371,6 +384,8 @@ namespace MC2PCardManager
         private void FormMain_Load(object sender, EventArgs e)
         {
             this.loadConfig();
+            this._onlineHead = this.GetLatestHead();
+            this.updateAvailable = (!string.IsNullOrEmpty(this._onlineHead)) && (!this._onlineHead.Equals(this._localtHead));
             if (string.IsNullOrEmpty(this._localPath))
             {
                 if (!this.chooseLocalPath())
@@ -397,6 +412,27 @@ namespace MC2PCardManager
             this.loadLocalPath();
             this.loadRemovableDrives();
             _loading = false;
+        }
+
+        public string GetLatestHead()
+        {
+            string ret = "", url = "https://gitlab.com/victor.trucco/Multicore_Bitstreams";
+            /*
+            var htmlDoc = new HtmlAgilityPack.HtmlDocument();
+            htmlDoc.OptionReadEncoding = false;
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "GET";
+            using (var response = (HttpWebResponse)request.GetResponse())
+            {
+                using (var stream = response.GetResponseStream())
+                {
+                    htmlDoc.Load(stream, Encoding.UTF8);
+                }
+            }
+            var nd = htmlDoc.DocumentNode.SelectSingleNode("/html/body/div[3]/div/div[3]/main/div[3]/div/div[2]/div/div[2]/div/span");
+            ret = nd.InnerText;
+            */
+            return ret;
         }
 
         private string downloadLatest()
