@@ -44,6 +44,7 @@ namespace MC2PCardManager
         private bool _waitingDowload = false;
 
         private MulticoreCoreZipFile _selectedCore = null;
+        private List<MulticoreCoreZipFile> _updatedCores = new List<MulticoreCoreZipFile>();
 
         public FormMain()
         {
@@ -61,6 +62,8 @@ namespace MC2PCardManager
         {
             bool loadingFlag = !_loading;
             if (loadingFlag) _loading = true;
+
+            _updatedCores.Clear();
 
             this.UncheckAllNodes(tvLocalPath.Nodes);
             List<TreeNode> nodesCores = new List<TreeNode>();
@@ -85,8 +88,12 @@ namespace MC2PCardManager
                             if (sdInfo == null) continue;
 
                             #region check if was updated
-                            mcZip.WasUpdated = (sdInfo.Length != mcZip.FileInfo.Length) || (sdInfo.LastWriteTime != mcZip.FileInfo.LastWriteTime);
-                            if (mcZip.WasUpdated) tnCore.Tag = mcZip;
+                            mcZip.WasUpdated = (sdInfo.Length != e.UncompressedSize);// || (sdInfo.LastWriteTime != e.LastModified);
+                            if (mcZip.WasUpdated)
+                            {
+                                tnCore.Tag = mcZip;
+                                this._updatedCores.Add(mcZip);
+                            }
                             haveUpdates |= mcZip.WasUpdated;
                             #endregion check if was updated
                             //zipContents += e.FileName + "\r\n";
@@ -94,9 +101,55 @@ namespace MC2PCardManager
                         }
                     }
                 }
-                if (haveUpdates) tvLocalPath.Refresh();
+                if (haveUpdates)
+                {
+                    tvLocalPath.Refresh();
+                    lbUpdateSD.Text = $"{this._updatedCores.Count} cores atualizados. Clique AQUI para atualizar o SD";
+                    lbUpdateSD.Visible = true;
+                }
             }
             if (loadingFlag) _loading = false;
+        }
+
+        private void updateSDCores()
+        {
+            int ok = 0;
+            lbProgressMsg.Text = ""; lbProgressMsg.Visible = true;
+            btGitLab.Visible = false; lbUpdateSD.Visible = false;
+            try
+            {
+                for (int c = 0; c < this._updatedCores.Count; c++)
+                {
+                    MulticoreCoreZipFile zip = this._updatedCores[c];
+                    lbProgressMsg.Text = $"Atualizando [{zip.Name}] - {c} de {this._updatedCores.Count}...";
+                    using (ZipFile zipFile = ZipFile.Read(zip.FileInfo.FullName))
+                    {
+                        try
+                        {
+                            Cursor.Current = Cursors.WaitCursor;
+                            try
+                            {
+                                zipFile.ExtractAll(_sdDrive.DriveInfo.RootDirectory.Name, ExtractExistingFileAction.OverwriteSilently);
+                                ok++;
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        }
+                        finally
+                        {
+                            Cursor.Current = Cursors.Default;
+                        }
+                    } //using
+                    Application.DoEvents(); //refresh progress
+                } //for
+            }
+            finally
+            {
+                lbProgressMsg.Text = ""; lbProgressMsg.Visible = false; btGitLab.Visible = true;
+                MessageBox.Show($"{ok} de {this._updatedCores.Count} cores atualizados com sucesso");
+            }
         }
 
         private void updateExistingRoms()
@@ -681,12 +734,20 @@ namespace MC2PCardManager
 
         private void tvLocalPath_DrawNode(object sender, DrawTreeNodeEventArgs e)
         {
-            MulticoreCoreZipFile core = (MulticoreCoreZipFile)e.Node.Tag;
-            e.DrawDefault = !core.WasUpdated;
-            if (!e.DrawDefault)
+            bool hasUpdate = false;
+            e.DrawDefault = false;
+            if (e.Node.Tag != null)
             {
-                
+                MulticoreCoreZipFile core = (MulticoreCoreZipFile)e.Node.Tag;
+                hasUpdate = core.WasUpdated;
             }
+            Font font = new Font(tvLocalPath.Font, hasUpdate ? FontStyle.Bold : FontStyle.Regular);
+            TextRenderer.DrawText(e.Graphics, e.Node.Text, font, new Point(e.Bounds.Left, e.Bounds.Top), tvLocalPath.ForeColor);
+        }
+
+        private void lbUpdateSD_Click(object sender, EventArgs e)
+        {
+            this.updateSDCores();
         }
 
         private void btGitLab_Click(object sender, EventArgs e)

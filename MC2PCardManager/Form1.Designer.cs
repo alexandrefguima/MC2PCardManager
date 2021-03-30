@@ -57,6 +57,7 @@ namespace MC2PCardManager
             this.txtRomsDir = new System.Windows.Forms.TextBox();
             this.gbRoms = new System.Windows.Forms.GroupBox();
             this.tvRoms = new System.Windows.Forms.TreeView();
+            this.lbUpdateSD = new System.Windows.Forms.Label();
             this.pnTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -76,6 +77,7 @@ namespace MC2PCardManager
             // 
             // pnTop
             // 
+            this.pnTop.Controls.Add(this.lbUpdateSD);
             this.pnTop.Controls.Add(this.btGitLab);
             this.pnTop.Controls.Add(this.btRomPaths);
             this.pnTop.Controls.Add(this.lbProgressMsg);
@@ -257,6 +259,7 @@ namespace MC2PCardManager
             // 
             this.tvLocalPath.CheckBoxes = true;
             this.tvLocalPath.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tvLocalPath.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
             this.tvLocalPath.Location = new System.Drawing.Point(3, 16);
             this.tvLocalPath.Name = "tvLocalPath";
             this.tvLocalPath.Size = new System.Drawing.Size(310, 324);
@@ -391,6 +394,19 @@ namespace MC2PCardManager
             this.tvRoms.TabIndex = 0;
             this.tvRoms.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvRoms_AfterCheck);
             // 
+            // lbUpdateSD
+            // 
+            this.lbUpdateSD.AutoSize = true;
+            this.lbUpdateSD.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.lbUpdateSD.ForeColor = System.Drawing.Color.Red;
+            this.lbUpdateSD.Location = new System.Drawing.Point(542, 42);
+            this.lbUpdateSD.Name = "lbUpdateSD";
+            this.lbUpdateSD.Size = new System.Drawing.Size(255, 13);
+            this.lbUpdateSD.TabIndex = 12;
+            this.lbUpdateSD.Text = "0 cores atualizados. Clique AQUI para atualizar o SD";
+            this.lbUpdateSD.Visible = false;
+            this.lbUpdateSD.Click += new System.EventHandler(this.lbUpdateSD_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -455,6 +471,7 @@ namespace MC2PCardManager
         private System.Windows.Forms.GroupBox gbRoms;
         private System.Windows.Forms.TreeView tvRoms;
         private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.Label lbUpdateSD;
     }
 }
 
